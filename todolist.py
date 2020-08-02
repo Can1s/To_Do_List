@@ -54,7 +54,19 @@ def print_all_tasks():
     print("All tasks:")
     tasks = session.query(Table.task, Table.deadline).order_by(Table.deadline).all()
     for i in range(len(tasks)):
-        print(f"{i+1}. {tasks[i][0]}. {tasks[i][1].strftime('%#d %b')}")
+        print(f"{i + 1}. {tasks[i][0]}. {tasks[i][1].strftime('%#d %b')}")
+    print()
+
+
+def print_missed_tasks():
+    today = datetime.today()
+    missed_tasks = session.query(Table.task, Table.deadline).filter(Table.deadline < today.date()).all()
+    print("Missed tasks:")
+    if len(missed_tasks) == 0:
+        print("Nothing is missed!")
+    else:
+        for i in range(len(missed_tasks)):
+            print(f"{i + 1}. {missed_tasks[i][0]}. {missed_tasks[i][1].strftime('%#d %b')}")
     print()
 
 
@@ -71,11 +83,26 @@ def add_task():
     print()
 
 
+def delete_task():
+    delete_tasks = session.query(Table.id, Table.task, Table.deadline).order_by(Table.deadline).all()
+    print("Choose the number of the task you want to delete:")
+    for i in range(len(delete_tasks)):
+        print(f"{i + 1}. {delete_tasks[i][1]}. {delete_tasks[i][2].strftime('%#d %b')}")
+    del_number = int(input()) - 1
+    del_row = delete_tasks[del_number]
+    session.query(Table).filter(Table.id == del_row[0]).delete()
+    session.commit()
+    print("The task has been deleted!")
+    print()
+
+
 def print_menu():
     print("""1) Today's tasks
 2) Week's tasks
 3) All tasks
-4) Add task
+4) Missed tasks
+5) Add task
+6) Delete task
 0) Exit""")
 
 
@@ -90,7 +117,11 @@ def main():
         elif action == 3:
             print_all_tasks()
         elif action == 4:
+            print_missed_tasks()
+        elif action == 5:
             add_task()
+        elif action == 6:
+            delete_task()
         elif action == 0:
             print()
             print("Bye!")
